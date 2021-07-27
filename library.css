@@ -20,7 +20,6 @@ table, .table-boredred, .table-dark {
 }
 
 
-
 .form-popup{
     display: flex;
     flex-direction: column;
@@ -30,7 +29,8 @@ table, .table-boredred, .table-dark {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-53%, -50%);
+    transform: translate(-50%, -50%);
+    z-index: 9;
 }
 
 .form-popup-hide {
@@ -60,13 +60,24 @@ table, .table-boredred, .table-dark {
     margin-left: 10px;
 }
 
-.custom-control-input, .custom-control-label {
-    transform: scale(1.2);
-    margin-left: 15px;
+.delete {
+    transition: all 0.8s ease-in-out;
 }
+.custom-control-input, .custom-control-label {
+    z-index: 1;
+    transition: all 0.8s ease-in-out;
+}
+
 
 .custom-control {
     display: flex;
     justify-content: center;
 }
 
+input {
+    outline: none;
+}
+
+.addBook {
+    transition: all 0.8s ease-in-out;
+}

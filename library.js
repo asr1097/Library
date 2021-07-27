@@ -127,7 +127,7 @@ function createTable() {
 
     // Event listener for delete buttons 
     document.querySelectorAll('.delete').forEach(btn => btn.addEventListener('click', deleteBook));
-    document.querySelectorAll('input').forEach(btn => btn.addEventListener('change', updateRead));
+    document.querySelectorAll('.custom-control-input').forEach(btn => btn.addEventListener('change', updateRead));
 }
 
 function deleteBook() {
@@ -180,7 +180,6 @@ document.querySelector('.add').addEventListener('click', function() {
     table.querySelectorAll('input').forEach(inp => inp.disabled = false);
     table.querySelectorAll('button').forEach(btn => btn.disabled = false);
     document.querySelector('.addBook').disabled = false;
-    
     document.querySelector('.form-popup').classList.toggle('form-popup-hide');
 });
 
@@ -189,11 +188,12 @@ document.querySelector('.cancel').addEventListener('click', function() {
     table.querySelectorAll('input').forEach(inp => inp.disabled = false);
     table.querySelectorAll('button').forEach(btn => btn.disabled = false);
     document.querySelector('.addBook').disabled = false;
-    document.querySelector('.form-popup').classList.toggle('form-popup-hide');
     document.forms['form-container']['title'].value = '';
     document.forms['form-container']['author'].value = '';
     document.forms['form-container']['pages'].value = '';
-    document.getElementById('#custom').checked = false;
+    document.getElementById('custom').checked = false;
+    document.querySelector('.form-popup').classList.toggle('form-popup-hide');
+    
 });
 
 
