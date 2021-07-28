@@ -1,17 +1,20 @@
 createTable();
 
-function Book(title, author, pages, read) {
-    this.title = title;
-    this.author = author;
-    this.pages = pages;
-    this.read = read;
+class Book {
+    constructor(title, author, pages, read) {
+        this.title = title;
+        this.author = author;
+        this.pages = pages;
+        this.read = read;
+    }
+
+    info() {
+        let readString = "read.";
+        if (!this.read) {readString = "not read yet."}
+        return this.title + " by " + this.author + ", " + this.pages + " pages, " + readString;
+    }
 }
 
-Book.prototype.info = function() {
-    let readString = "read.";
-    if (!this.read) {readString = "not read yet."}
-    return this.title + " by " + this.author + ", " + this.pages + " pages, " + readString
-}
 
 function addBookToLibrary() {
     // Prompt the user for data,
@@ -111,8 +114,7 @@ function createTable() {
         button.setAttribute('data-indexnum', `${localStorage.key(i)}`);
         button.textContent = 'DELETE';
         button.classList.add('delete', 'btn', 'btn-danger');
-        book = new Book(book.title, book.author, book.pages, book.read);
-
+        
         let btn = document.createElement('td');
         btn.appendChild(button);
 
@@ -195,6 +197,5 @@ document.querySelector('.cancel').addEventListener('click', function() {
     document.querySelector('.form-popup').classList.toggle('form-popup-hide');
     
 });
-
 
 
