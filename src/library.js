@@ -1,4 +1,33 @@
-createTable();
+import uniqid from "uniqid";
+import "./library.css";
+
+import { initializeApp } from "firebase/app";
+import { 
+    getFirestore,
+    collection,
+    addDoc,
+    doc,
+    getDoc,
+    getDocs,
+    setDoc,
+    deleteDoc,
+    updateDoc
+}
+from "firebase/firestore";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAUFCeLmtnDpK6vBOi4gxfZoI72nWLKpJ4",
+    authDomain: "library-8f57c.firebaseapp.com",
+    projectId: "library-8f57c",
+    storageBucket: "library-8f57c.appspot.com",
+    messagingSenderId: "975354937594",
+    appId: "1:975354937594:web:273f895432d06adcda4943"
+  };
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore();
+
+
 
 class Book {
     constructor(title, author, pages, read) {
@@ -6,6 +35,7 @@ class Book {
         this.author = author;
         this.pages = pages;
         this.read = read;
+        this.index = uniqid();
     }
 
     info() {
@@ -16,11 +46,10 @@ class Book {
 }
 
 
-function addBookToLibrary() {
+async function addBookToLibrary() {
     // Prompt the user for data,
     // add the book to local storage
     // and add it to the table
-    
     let title = document.forms['form-container']['title'].value;
     if (title === "") {
         alert("Please enter valid title.");
@@ -39,14 +68,40 @@ function addBookToLibrary() {
     let read = document.querySelector('#custom').checked;
     
     let book = new Book(title, author, pages, read);
-    localStorage.setItem(findFreeIndex(), JSON.stringify(book));
+
+    await dbAddBook(book)
     let table = document.querySelector('table');
     document.querySelector('body').removeChild(table);
     createTable();
     return true;
 }
 
-function createTable() {
+const dbAddBook = async(book) => {
+    try {
+        const docRef = await setDoc(doc(db, "books", book.index), {
+          title: book.title,
+          author: book.author,
+          pages: book.pages,
+          read: book.read,
+          index: book.index
+        });
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      }
+}
+
+const dbGetBooks = async() => {
+    let books = [];
+    const querySnapshot = await getDocs(collection(db, "books"));
+
+    querySnapshot.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
+    books.push(doc.data());
+    });
+    return books;
+}
+
+async function createTable() {
     // Create table if it doesn't exist and
     // add table headers
     if (document.querySelector('table') === null) {
@@ -78,18 +133,19 @@ function createTable() {
     // Fill the table with data from
     // local storage and create buttons
     // for 'read' switch and 'delete'
-    for (let i = 0; i < localStorage.length; i++) { 
-        let book = JSON.parse(localStorage.getItem(localStorage.key(i)));
+    let books = await dbGetBooks();
+    
+    for (let i = 0; i < books.length; i++) { 
         let row = document.createElement('tr');
 
         let title = document.createElement('td');
-        title.textContent = book.title;
+        title.textContent = books[i].title;
 
         let author = document.createElement('td');
-        author.textContent = book.author;
+        author.textContent = books[i].author;
 
         let pages = document.createElement('td');
-        pages.textContent = book.pages;
+        pages.textContent = books[i].pages;
 
         let read = document.createElement('td');
 
@@ -99,19 +155,19 @@ function createTable() {
         let input = document.createElement('input')
         input.type='checkbox';
         input.classList.add("custom-control-input");
-        input.id = `customSwitch${localStorage.key(i)}`;
-        if (book.read === true) {input.checked = true}
+        input.id = `${books[i].index}`;
+        if (books[i].read === true) {input.checked = true}
         else {input.checked = false};
         let label = document.createElement('label');
         label.classList.add('custom-control-label');
-        label.setAttribute('for', `customSwitch${localStorage.key(i)}`);
+        label.setAttribute('for', `${books[i].index}`);
 
         togDiv.appendChild(input);
         togDiv.appendChild(label);
         read.appendChild(togDiv);
 
         let button = document.createElement('button');
-        button.setAttribute('data-indexnum', `${localStorage.key(i)}`);
+        button.setAttribute('data-indexnum', `${books[i].index}`);
         button.textContent = 'DELETE';
         button.classList.add('delete', 'btn', 'btn-danger');
         
@@ -132,34 +188,33 @@ function createTable() {
     document.querySelectorAll('.custom-control-input').forEach(btn => btn.addEventListener('change', updateRead));
 }
 
-function deleteBook() {
+const dbDeleteBook = async(index) => {
+    await deleteDoc(doc(db, "books", index))
+}
+
+async function deleteBook() {
     // Get the index for item in local storage,
     // delete it and create new table
     let index = this.dataset.indexnum;
-    localStorage.removeItem(index);
+    await dbDeleteBook(index);
     let table = document.querySelector('table');
     document.querySelector('body').removeChild(table);
     createTable();
 }
 
-function updateRead() {
-    let index = this.getAttribute('id');
-    index = index.substr(12);
-    index = parseInt(index);
-    let book = localStorage.getItem(index);
-    book = JSON.parse(book);
-    if (this.checked) {book['read'] = true}
-    else {book['read'] = false};
-    book = JSON.stringify(book);
-    localStorage.setItem(index, book);
+const dbUpdateBook = async(index, value) => {
+    const bookRef = doc(db, "books", index)
+    await updateDoc(bookRef, {
+        read: value
+    });
 }
 
-function findFreeIndex() {
-    for (let i = 0; i < localStorage.length; i++) {
-        let curKey = localStorage.getItem(i);
-        if (curKey === null) {return i}
-    }
-    return localStorage.length
+function updateRead() {
+    let value;
+    if (this.checked) {value = true}
+    else {value = false};
+    let index = this.getAttribute('id');
+    dbUpdateBook(index, value);
 }
 
 let button = document.createElement('button');
@@ -197,5 +252,7 @@ document.querySelector('.cancel').addEventListener('click', function() {
     document.querySelector('.form-popup').classList.toggle('form-popup-hide');
     
 });
+
+createTable();
 
 
